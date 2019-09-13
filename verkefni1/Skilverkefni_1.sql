@@ -87,10 +87,18 @@ delimiter ;*/
 delimiter $$
 drop procedure if exists DeleteCourse $$
 
-create procedure DeleteCourse()
+create procedure DeleteCourse(
+	in cNum char(10)
+	)
 begin
-	-- kóði hér...
+	select courseNumber
+	from Courses
+	where courseNumber = cNum;
+
+	select row_count();
+
 end $$
+call DeleteCourse("EÐL103")$$
 delimiter ;
 
 
