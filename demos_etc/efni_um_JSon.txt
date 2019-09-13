@@ -1,0 +1,20 @@
+JSon gagnatagið(data type) í MySQL:
+https://dev.mysql.com/doc/refman/5.7/en/json.html
+
+JSon föll(functions) í MySQL:
+https://dev.mysql.com/doc/refman/5.7/en/json-function-reference.html
+
+Notkun á JSon í MySQL(efni frá SitePoint):
+https://www.sitepoint.com/use-json-data-fields-mysql-databases/
+
+Unnið með JSon í MySQL(efni frá Scotch):
+https://scotch.io/tutorials/working-with-json-in-mysql
+
+Efni frá MySQLTutorial:
+http://www.mysqltutorial.org/mysql-json/
+
+Efni frá Compose:
+https://www.compose.com/articles/mysql-for-your-json/
+
+Lorna Jane Blog:
+https://lornajane.net/posts/2016/mysql-5-7-json-features

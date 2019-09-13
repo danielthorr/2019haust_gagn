@@ -6,8 +6,13 @@ drop procedure if exists CourseList $$
 
 create procedure CourseList()
 begin
-	-- kóði hér...
+	select 
+		courseNumber, courseName, courseCredits
+	from
+		Courses
+	order by courseNumber asc;
 end $$
+call CourseList$$
 delimiter ;
 
 
@@ -16,10 +21,15 @@ delimiter ;
 delimiter $$
 drop procedure if exists SingleCourse $$
 
-create procedure SingleCourse()
+create procedure SingleCourse( in course char(10))
 begin
-	-- kóði hér...
+	select
+		courseNumber, courseName, courseCredits
+	from 
+		Courses
+	where courseNumber = course;
 end $$
+call SingleCourse("CNA403")$$
 delimiter ;
 
 
@@ -29,24 +39,46 @@ delimiter ;
 delimiter $$
 drop procedure if exists NewCourse $$
 
-create procedure NewCourse()
+create procedure NewCourse(
+	in cNum char(10), 
+	in cName varchar(75), 
+	in cCred tinyint(4)
+	)
 begin
-	-- kóði hér...;
+	insert into 
+		Courses (courseNumber, courseName, courseCredits)
+	values
+		(cNum, cName, cCred);
 end $$
+call NewCourse("TST203", "Test f. procedure", 5)$$
 delimiter ;
 
 
 -- 4:
 -- Uppfærið réttan kúrs.
 -- row_count() fallið er hér notað til að birta fjölda raða sem voru uppfærðar.
-delimiter $$
+/*delimiter $$
 drop procedure if exists UpdateCourse $$
 
-create procedure UpdateCourse()
+create procedure UpdateCourse(
+	in cNumUpdate char(10),
+	in cNum char(10), 
+	in cName varchar(75), 
+	in cCred tinyint(4)
+	)
 begin
-	-- kóði hér...
+	update 
+		Courses
+	set
+		courseNumber = cNum,
+		courseName = cName,
+		courseCredits = cCred
+	where
+		courseNumber = cNumUpdate;
+	row_count();
 end $$
-delimiter ;
+call UpdateCourse("EÐL103", "EÐL102", "Eðlisfræði 1A", 5)$$
+delimiter ;*/
 
 
 -- 5:

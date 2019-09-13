@@ -1,0 +1,6 @@
+http://wiki.hashphp.org/PDO_Tutorial_for_MySQL_Developers
+
+http://www.mysqltutorial.org/php-querying-data-from-mysql-table/
+
+http://php.net/manual/en/book.pdo.php
+
