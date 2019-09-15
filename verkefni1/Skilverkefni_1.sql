@@ -57,28 +57,45 @@ delimiter ;
 -- 4:
 -- Uppfærið réttan kúrs.
 -- row_count() fallið er hér notað til að birta fjölda raða sem voru uppfærðar.
-/*delimiter $$
+delimiter $$
 drop procedure if exists UpdateCourse $$
 
 create procedure UpdateCourse(
-	in cNumUpdate char(10),
-	in cNum char(10), 
+	in cNum char(10),
+	in cNumNew char(10), 
 	in cName varchar(75), 
 	in cCred tinyint(4)
 	)
 begin
-	update 
-		Courses
-	set
-		courseNumber = cNum,
-		courseName = cName,
-		courseCredits = cCred
-	where
-		courseNumber = cNumUpdate;
-	row_count();
+
+	set foreign_key_checks = 0;
+	
+	if exists (select courseNumber from Courses where courseNumber = cNum) then
+		update Courses 
+		set
+			courseNumber = cNumNew,
+			courseName = cName,
+			courseCredits = cCred
+		where courseNumber = cNum;
+	end if;
+	
+	if exists (select courseNumber from Restrictors where courseNumber = cNum) then
+		update Restrictors set courseNumber = cNumNew
+		where courseNumber = cNum;
+	end if;
+
+	if exists ( select restrictorID from Restrictors where restrictorID = cNum) then
+		update Restrictors set restrictorID = cNumNew
+		where restrictorID = cNum;
+	end if;
+
+	set foreign_key_checks = 1;
+
+	select row_count();
+	-- Ég náði ekki að fá row_count() til þess að virka
 end $$
-call UpdateCourse("EÐL103", "EÐL102", "Eðlisfræði 1A", 5)$$
-delimiter ;*/
+call UpdateCourse("EÐL103", "EÐL102", "Eðlisfræði 1A", 3)$$
+delimiter ;
 
 
 -- 5:
@@ -91,14 +108,26 @@ create procedure DeleteCourse(
 	in cNum char(10)
 	)
 begin
-	select courseNumber
-	from Courses
-	where courseNumber = cNum;
 
-	select row_count();
+	if not exists (select courseNumber from TrackCourses 
+		where courseNumber = cNum) then
+		
+		if exists(select courseNumber from Courses where courseNumber = cNum) then
+			delete from Courses where courseNumber = cNum;
+		end if;
+
+		if exists(select courseNumber from Restrictors where courseNumber = cNum) then
+			delete from Restrictors where courseNumber = cNum;
+		end if;
+
+		if exists(select restrictorID from Restrictors where courseNumber = cNum) then
+			delete from Restrictors where restrictorID = cNum;
+		end if;
+
+	end if;
 
 end $$
-call DeleteCourse("EÐL103")$$
+call DeleteCourse("TST103")$$
 delimiter ;
 
 
@@ -110,8 +139,17 @@ drop function if exists NumberOfCourses $$
 create function NumberOfCourses()
 returns int
 begin
-	-- kóði hér...
+
+	declare total int;
+	set total = 0;
+
+	select count(courseNumber) into total
+	from TrackCourses where mandatory = 1;
+
+	return total;
+
 end $$
+select NumberOfCourses()$$
 delimiter ;
 
 
@@ -121,11 +159,21 @@ delimiter ;
 delimiter $$
 drop function if exists TotalTrackCredits $$
     
-create function TotalTrackCredits()
+create function TotalTrackCredits(tID int)
 returns int
 begin
-	-- kóði hér...
+	declare total int;
+	set total = 0;
+
+	select sum(c.courseCredits) into total
+	from Courses c
+	inner join TrackCourses t on t.courseNumber = c.courseNumber
+	where t.trackID = tID;
+
+	return total;
+
 end $$
+select TotalTrackCredits(9)$$
 delimiter ;
 
 
@@ -134,11 +182,18 @@ delimiter ;
 delimiter $$
 drop function if exists TotalNumberOfTrackCourses $$
     
-create function TotalNumberOfTrackCourses()
+create function TotalNumberOfTrackCourses(tID int)
 returns int
 begin
-	-- kóði hér...
+	declare total int;
+	set total = 0;
+
+	select count(courseNumber) into total
+	from TrackCourses where trackID = tID;
+
+	return total;
 end $$
+select TotalNumberOfTrackCourses(9)$$
 delimiter ;
 
 
@@ -147,11 +202,21 @@ delimiter ;
 delimiter $$
 drop function if exists CourseInUse $$
     
-create function CourseInUse()
+create function CourseInUse(course char(10))
 returns int
 begin
-	-- kóði hér...
+	declare bool int;
+	set bool = 0;
+
+	if exists (select courseNumber from TrackCourses 
+		where courseNumber = course) then
+		set bool = 1;
+	end if;
+
+	return bool;
+
 end $$
+select CourseInUse("STÆ103")$$
 delimiter ;
 
 
@@ -163,8 +228,20 @@ drop function if exists IsLeapyear $$
 create function IsLeapYear()
 returns boolean
 begin
-	-- kóði hér...
+	declare leap int;
+	set leap = 0;
+	
+	if ((select mod(year(curdate()), 4) = 0) and (select mod(year(curdate()), 100) != 0))
+		then set leap = 1;
+	elseif (select mod(year(curdate()), 400) = 0)
+		then set leap = 1;
+	else 
+		set leap = 0;
+	end if;
+
+	return leap;
 end $$
+select IsLeapYear()$$
 delimiter ;
 
 
@@ -173,11 +250,19 @@ delimiter ;
 delimiter $$
 drop function if exists StudentAge $$
     
-create function StudentAge()
+create function StudentAge(studID int)
 returns int
 begin
-	-- kóði hér...
+	declare age int;
+	set age = 0;
+
+	select timestampdiff(year, Students.dob, curdate()) into age
+	from Students
+	where studentID = studID;
+
+	return age;
 end $$
+select StudentAge(1)$$
 delimiter ;
 
 -- 12:
@@ -185,11 +270,19 @@ delimiter ;
 delimiter $$
 drop function if exists StudentCredits $$
     
-create function StudentCredits()
+create function StudentCredits(studID int)
 returns int
 begin
-	-- kóði hér...
+	declare total int;
+	set total = 0;
+
+	select count(passed) into total 
+	from Registration
+	where passed != 0 and studentID = studID;
+
+	return total;
 end $$
+select StudentCredits(1)$$
 delimiter ;
 
 -- 13:
@@ -200,8 +293,12 @@ drop procedure if exists TrackTotalCredits $$
 
 create procedure TrackTotalCredits()
 begin
-	-- kóði hér...
+	select d.divisionName, t.trackName, count(c.courseNumber) as "Number of courses"
+	from Divisions d
+	inner join Tracks t on t.divisionID = d.divisionID
+	inner join TrackCourses c on c.trackID = t.trackID;
 end $$
+call TrackTotalCredits()$$
 delimiter ;
 
 
@@ -213,8 +310,13 @@ drop procedure if exists CourseRestrictorList $$
 
 create procedure CourseRestrictorList()
 begin
-	-- kóði hér...
+	select 
+		c.courseNumber as "Course", c.courseCredits as "Credits", 
+		r.courseNumber as "Restrictor", r.restrictorType as "Type"
+	from Courses c 
+	left join Restrictors r on r.courseNumber = c.courseNumber;
 end $$
+call CourseRestrictorList()$$
 delimiter ;
 
 
@@ -226,6 +328,10 @@ drop procedure if exists RestrictorList $$
 
 create procedure RestrictorList()
 begin
-	-- kóði hér...
+	select 
+		r.courseNumber as "Restrictor", c.courseNumber as "Course"
+	from Restrictors r 
+	left join Courses c on c.courseNumber = r.courseNumber;
 end $$
+call RestrictorList()$$
 delimiter ;
