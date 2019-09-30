@@ -79,6 +79,51 @@ delimiter ;
     Að endingu skrifið þið stored procedure-inn StudentRegistration() sem nota skal við sjálfstæða skráningu áfanga nemandans.
 */
 
+	/* 	Við búum til procedure-in AddStudent og AddMandatoryCourses 
+		í öfugri röð af því að það er ekki hægt að kalla 
+		á procedure áður en það er skilgreint. */
+
+/* ---------- AddMandatoryCourses ---------- */
+delimiter $$
+
+drop procedure if exists AddMandatoryCourses$$
+
+create procedure AddMandatoryCourses(
+	in studID int,
+	in semID int
+)
+begin
+
+	declare count int default 0;
+	declare maxCount int default (
+		select count(*) from TrackCourses
+		where mandatory = 1
+	);
+
+	while count < maxCount do
+		insert into Registration (
+			studentID, 
+			trackID, 
+			courseNumber,
+			registrationDate,
+			semesterID
+			)
+		values (
+			studID, 
+			(select trackID from TrackCourses 
+			where mandatory = 1 limit 1 offset count),
+			(select courseNumber from TrackCourses 
+			where mandatory = 1 limit 1 offset count),
+			curdate(),
+			semID
+			);
+		set count = count + 1;
+	end while;
+
+end$$
+
+delimiter ;
+
 /* ---------- AddStudent ---------- */
 delimiter $$
 
@@ -91,35 +136,17 @@ create procedure AddStudent(
 )
 begin
 	declare semID int;
-	set semID = 0;
-
-	select semesterID into semID from Semesters
-	where semesterStarts > curdate() and semesterEnds < curdate();
+	set semID = (select semesterID from Semesters
+	where semesterStarts < curdate() and semesterEnds > curdate());
 
 	insert into Students(firstName, lastName, dob, startSemester)
 	values (studFirst, studLast, studDOB, semID);
 
-	select * from Students where name = "Daníel";
-	delete from Students where name = "Daníel";
-	select * from Students where name = "Daníel";
+	call AddMandatoryCourses((select last_insert_id()), semID);
 
 end$$
 
 call AddStudent("Daníel", "Þórisson", "1993-06-08")$$
-
-delimiter ;
-
-/* ---------- AddMandatoryCourses ---------- */
-delimiter $$
-
-drop procedure if exists AddMandatoryCourses$$
-
-create procedure AddMandatoryCourses()
-begin
-
-end$$
-
-call AddMandatoryCourses()$$
 
 delimiter ;
 
@@ -128,11 +155,35 @@ delimiter $$
 
 drop procedure if exists StudentRegistration$$
 
-create procedure StudentRegistration()
+create procedure StudentRegistration(
+	in studID int,
+	in cNumber char(10)
+	)
 begin
+
+	/* Vanalega myndi maður ekki láta notendur slá inn
+		auto_increment id en þetta yrði væntanlega tengt 
+		við einhverskonar innskráningu eða kennitölu */
+	insert into Registration(
+		studentID, 
+		trackID, 
+		courseNumber, 
+		registrationDate,
+		semesterID
+		)
+	values 
+	(
+		studID,
+		(select trackID from TrackCourses 
+		where courseNumber = cNumber),
+		cNumber,
+		curdate(),
+		(select Semester from TrackCourses 
+		where courseNumber = cNumber)
+	);
 
 end$$
 
-call StudentRegistration$$
+call StudentRegistration(1, "STÆ103")$$
 
 delimiter ;
