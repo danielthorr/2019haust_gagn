@@ -48,16 +48,24 @@ delimiter ;
 	Aðeins skal velja staðinn áfanga. passed = true
 */
 delimiter $$
-drop procedure if exists GetEiningar $$
+drop procedure if exists GetCredits $$
 
-create procedure GetEiningar(in )
+create procedure GetCredits(in studID int)
 begin
-	declare total int;
-	set total = 0;
 
-	select sum()
+	select
+		concat(s.firstName, " ", s.lastName) as "Name",
+		sum(c.courseCredits) as "Total credits",
+		c.courseName,
+		t.trackName
+	from Students s
+	join Registration r on r.studentID = s.studentID
+	join Tracks t on t.trackID = r.trackID
+	join Courses c on c.courseNumber = r.courseNumber
+	where s.studentID = studID and r.passed = 1;
+	
 end$$
-call GetEiningar()$
+call GetCredits(1)$$
 delimiter ;
 
 
@@ -71,3 +79,60 @@ delimiter ;
     Að endingu skrifið þið stored procedure-inn StudentRegistration() sem nota skal við sjálfstæða skráningu áfanga nemandans.
 */
 
+/* ---------- AddStudent ---------- */
+delimiter $$
+
+drop procedure if exists AddStudent$$
+
+create procedure AddStudent(
+	in studFirst varchar(55), 
+	in studLast varchar(55), 
+	in studDOB date
+)
+begin
+	declare semID int;
+	set semID = 0;
+
+	select semesterID into semID from Semesters
+	where semesterStarts > curdate() and semesterEnds < curdate();
+
+	insert into Students(firstName, lastName, dob, startSemester)
+	values (studFirst, studLast, studDOB, semID);
+
+	select * from Students where name = "Daníel";
+	delete from Students where name = "Daníel";
+	select * from Students where name = "Daníel";
+
+end$$
+
+call AddStudent("Daníel", "Þórisson", "1993-06-08")$$
+
+delimiter ;
+
+/* ---------- AddMandatoryCourses ---------- */
+delimiter $$
+
+drop procedure if exists AddMandatoryCourses$$
+
+create procedure AddMandatoryCourses()
+begin
+
+end$$
+
+call AddMandatoryCourses()$$
+
+delimiter ;
+
+/* ---------- StudentRegistration ---------- */
+delimiter $$
+
+drop procedure if exists StudentRegistration$$
+
+create procedure StudentRegistration()
+begin
+
+end$$
+
+call StudentRegistration$$
+
+delimiter ;
