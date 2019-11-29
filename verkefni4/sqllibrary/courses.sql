@@ -16,15 +16,12 @@ begin
 end$$
 
  /* Read */
-drop function if exists GetCourse$$
-create function GetCourse(couNumber char(10))
-returns varchar(90)
+drop procedure if exists GetCourse$$
+create procedure GetCourse(in couNumber char(10), out result varchar(90))
 begin
-    return(
-        Select 
-            concat_ws("::", courseNumber, courseName, courseCredits)
-        from Courses where courseNumber = couNumber
-    );
+    Select 
+        concat_ws("::", courseNumber, courseName, courseCredits) into result
+    from Courses where courseNumber = couNumber;
 end$$
 
 /* Update */

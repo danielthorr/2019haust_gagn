@@ -16,15 +16,15 @@ begin
 end$$
 
  /* Read */
-drop function if exists GetStudent$$
-create function GetStudent(stID int)
-returns varchar(160)
+drop procedure if exists GetStudent$$
+create procedure GetStudent(in stID int, out result varchar(160))
 begin
-    return(
-        Select 
+    Select 
         concat_ws("::",st.firstName, st.lastName, st.dob, sem.semesterName)
-        from Students st inner join Semesters sem on st.startSemester = sem.semesterID where studentID = stID
-    );
+        into result
+    from Students st 
+    inner join Semesters sem on st.startSemester = sem.semesterID 
+    where studentID = stID;
 end$$
 
 /* Update */

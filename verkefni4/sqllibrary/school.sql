@@ -15,15 +15,12 @@ begin
 end$$
 
  /* Read */
-drop function if exists GetSchool$$
-create function GetSchool(schID int)
-returns varchar(75)
+drop procedure if exists GetSchool$$
+create procedure GetSchool(in schID int, out result varchar(75))
 begin
-    return(
-        Select 
-            schoolName
-        from Schools where schoolID = schID
-    );
+    Select 
+        schoolName into result
+    from Schools where schoolID = schID;
 end$$
 
 /* Update */
