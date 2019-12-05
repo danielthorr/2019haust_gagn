@@ -16,11 +16,18 @@ end$$
 
  /* Read */
 drop procedure if exists GetSchool$$
-create procedure GetSchool(in schID int, out result varchar(75))
+create procedure GetSchool(in schID int)
 begin
     Select 
-        schoolName into result
+        schoolID, schoolName
     from Schools where schoolID = schID;
+end$$
+drop procedure if exists GetAllSchools$$
+create procedure GetAllSchools()
+begin
+    Select 
+        schoolID, schoolName
+    from Schools;
 end$$
 
 /* Update */

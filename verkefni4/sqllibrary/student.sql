@@ -17,14 +17,28 @@ end$$
 
  /* Read */
 drop procedure if exists GetStudent$$
-create procedure GetStudent(in stID int, out result varchar(160))
+create procedure GetStudent(in stID int)
 begin
     Select 
-        concat_ws("::",st.firstName, st.lastName, st.dob, sem.semesterName)
-        into result
+        st.studentID, st.firstName, st.lastName, st.dob, sem.semesterName
     from Students st 
     inner join Semesters sem on st.startSemester = sem.semesterID 
     where studentID = stID;
+end$$
+drop procedure if exists GetAllStudents$$
+create procedure GetAllStudents()
+begin
+    Select 
+        st.studentID, st.firstName, st.lastName, st.dob, sem.semesterName
+    from Students st 
+    inner join Semesters sem on st.startSemester = sem.semesterID;
+end$$
+
+drop procedure if exists GetStudentCourses$$
+create procedure GetStudentCourses(in stID int)
+begin
+	select courseNumber, passed, semesterID 
+	from Registration where studentID = stID order by passed;
 end$$
 
 /* Update */

@@ -17,11 +17,18 @@ end$$
 
  /* Read */
 drop procedure if exists GetCourse$$
-create procedure GetCourse(in couNumber char(10), out result varchar(90))
+create procedure GetCourse(in couNumber char(10))
 begin
     Select 
-        concat_ws("::", courseNumber, courseName, courseCredits) into result
+        courseNumber, courseName, courseCredits
     from Courses where courseNumber = couNumber;
+end$$
+drop procedure if exists GetAllCourses$$
+create procedure GetAllCourses()
+begin
+    Select 
+        courseNumber, courseName, courseCredits
+    from Courses;
 end$$
 
 /* Update */
