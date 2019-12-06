@@ -1,0 +1,27 @@
+
+.error { color:red; }
+.row {
+  display:flex;
+  width: 80vw;
+  margin: 0 auto;
+}
+.sub {
+  height:30vh;
+  min-height:200px;
+  width: 50%;
+  overflow-y:scroll;
+  border: 1px solid black;
+  padding: 5px 10px; 
+}
+.sub > div {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid black;
+}
+form.grid { display: grid; }
+form.grid > div {
+  display: subgrid;
+}
+tr { border-bottom: 1px solid black; }
+th, td { border-right: 1px solid black; border-bottom: 1px solid black; padding: 2px 5px; margin:0; }
+tr:nth-child(even) { background-color: lightblue; }
